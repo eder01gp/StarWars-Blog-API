@@ -4,8 +4,9 @@ db = SQLAlchemy()
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    userName = db.Column(db.String(250), nullable=False)
-    email = db.Column(db.String(250), nullable=False)
+    userName = db.Column(db.String(250), nullable=False, unique=True)
+    email = db.Column(db.String(250), nullable=False, unique=True)
+    password = db.Column(db.String(250), nullable=False)
 
     def serialize(self):
         return {
@@ -87,8 +88,8 @@ class Favorite(db.Model):
     character = db.relationship(Character)
     favorite_planet = db.Column(db.Integer, db.ForeignKey('planet.id'))
     planet = db.relationship(Planet)
-    favorite_vehicle = db.Column(db.Integer, db.ForeignKey('vehicle.id'))
-    vehicle = db.relationship(Vehicle)
+    favorite_vehicle = db.Column(db.Integer) #db.ForeignKey('vehicle.id') Anulamos para que no falle al cargar nuevos favoritos que no existan en la BBDD
+    #vehicle = db.relationship(Vehicle)
 
     def serialize(self):
         return {

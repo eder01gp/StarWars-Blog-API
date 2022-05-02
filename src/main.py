@@ -70,6 +70,70 @@ def user_favorites(favorite_user):
 
     return jsonify(user_favorites_serial), 200
 
+@app.route('/user_login', methods=['POST'])
+def login():
+    user_name = request.json.get("user")
+    user_email = request.json.get("email")
+    user_password = request.json.get("password")
+    login_user = User.query.filter(User.userName==user_name,User.email==user_email,User.password==user_password).first()
+    print(login_user)
+    if login_user != None:
+        return jsonify({"Respuesta":{"User": login_user.userName, "id":login_user.id}}), 200
+    else:
+        return jsonify({"Respuesta":0}), 200
+
+@app.route('/user', methods=['POST'])
+def new_user():
+    user_name = request.json.get("user")
+    user_email = request.json.get("email")
+    user_password = request.json.get("password")
+    new_user = User(userName=user_name,email=user_email,password=user_password)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"Respuesta":"User correctly created"}), 200
+
+@app.route('/user', methods=['DELETE'])
+def del_user():
+    user_name = request.json.get("user")
+    user_email = request.json.get("email")
+    user_password = request.json.get("password")
+    del_user = User.query.filter(User.userName==user_name,User.email==user_email,User.password==user_password).first()
+    if del_user == None:
+        return jsonify({"Respuesta":"Incorrect data, please check"}), 200
+    else:
+        db.session.delete(del_user)
+        db.session.commit()
+        return jsonify({"Respuesta":"User correctly deleted"}), 200
+
+@app.route('/user/<int:user_id>/favorite/vehicle/<int:vehicle_id>', methods=['POST'])
+def new_fav_vehicle(user_id,vehicle_id):
+    check = User.query.get(user_id)
+    if check == None:
+        return jsonify({"Respuesta":"No existe este usuario"}), 200
+    else:
+        new_fav_vehicle = Favorite.query.filter(Favorite.favorite_user==user_id,Favorite.favorite_vehicle==vehicle_id).first()
+        if new_fav_vehicle != None:
+            db.session.delete(new_fav_vehicle)
+            db.session.commit()
+            return jsonify({"Respuesta":"Favorito eliminado correctamente"}), 200
+        else:
+            new_fav_vehicle = Favorite(favorite_user=user_id,favorite_vehicle=vehicle_id)
+            db.session.add(new_fav_vehicle)
+            db.session.commit()
+            return jsonify({"Respuesta":"Favorito añadido correctamente"}), 200
+
+
+
+@app.route('/user/<int:user_id>/favorites', methods=['GET'])
+def favorites():
+    favorites = Favorite.query.filter_by(favorite_user=user_id)
+    favorites_serial = list(map(lambda e: e.serialize(),favorites))
+
+    return jsonify(favorites_serial), 200
+
+
+
+
 @app.route('/user/<int:user_id>/favorite/planet/<int:planet_id>', methods=['POST'])
 def new_fav_planet(user_id,planet_id):
     check = User.query.get(user_id)
